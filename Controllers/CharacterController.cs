@@ -13,10 +13,13 @@ namespace dotnet_rpg.Controllers
             new Character { Id = 2, Name = "Sam", HitPoints = 105, Strength = 12, Defence = 12, Intelligence = 12, Class = RpgClass.Knight }
         };
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         public ActionResult<List<Character>> Get()
         {
             return Ok(characters);
         }
+
+        [HttpGet]
+        public ActionResult<Character> GetSingle() => Ok(characters[0]);
     }
 }
