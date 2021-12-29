@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using dotnet_rpg.Data;
 using dotnet_rpg.Dtos.Character;
 using dotnet_rpg.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rpg.Services.CharacterService
 {
@@ -16,9 +18,12 @@ namespace dotnet_rpg.Services.CharacterService
         };
         private readonly IMapper _mapper;
 
-        public CharacterService(IMapper mapper)
+        public readonly DataContext _context;
+
+        public CharacterService(IMapper mapper, DataContext context)
         {
             _mapper = mapper;
+            _context = context;
         }
 
         public async Task<ServiceResponse<List<GetCharacterDto>>> AddCharacter(AddCharacterDto newCharacter)
@@ -34,7 +39,8 @@ namespace dotnet_rpg.Services.CharacterService
         public async Task<ServiceResponse<List<GetCharacterDto>>> GetAllCharacters()
         {
             var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
-            serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
+            var dbCharacters = await _context.Characters.ToListAsync();
+            serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(dbCharacters);
             return serviceResponse;
         }
 
