@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using dotnet_rpg.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rpg.Data
 {
@@ -14,15 +15,25 @@ namespace dotnet_rpg.Data
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
+            var serviceResponse = new ServiceResponse<int>();
+
+            if (await UserExists(user.Username))
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = "Username already exists";
+                return serviceResponse;
+            }
+
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            serviceResponse.Data = user.Id;
             
-           _context.Users.Add(user);
-           await _context.SaveChangesAsync();
-           var serviceResponse = new ServiceResponse<int>();
-           serviceResponse.Data = user.Id;
-           return serviceResponse;
+            return serviceResponse;
+
         }
 
         public Task<ServiceResponse<string>> Login(string username, string password)
@@ -30,14 +41,18 @@ namespace dotnet_rpg.Data
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> UserExists(string username)
+        public async Task<bool> UserExists(string username)
         {
-            throw new System.NotImplementedException();
+            if (await _context.Users.AnyAsync(x => x.Username.ToLower().Equals(username.ToLower())))
+            {
+                return true;
+            }
+            return false;
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using(var hmac = new System.Security.Cryptography.HMACSHA512())
+            using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
