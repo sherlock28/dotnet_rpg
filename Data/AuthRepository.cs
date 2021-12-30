@@ -15,12 +15,11 @@ namespace dotnet_rpg.Data
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
-            var serviceResponse = new ServiceResponse<int>();
-
+            ServiceResponse<int> serviceResponse = new ServiceResponse<int>();
             if (await UserExists(user.Username))
             {
                 serviceResponse.Success = false;
-                serviceResponse.Message = "Username already exists";
+                serviceResponse.Message = "User already exists.";
                 return serviceResponse;
             }
 
@@ -33,7 +32,6 @@ namespace dotnet_rpg.Data
             serviceResponse.Data = user.Id;
             
             return serviceResponse;
-
         }
 
         public Task<ServiceResponse<string>> Login(string username, string password)
