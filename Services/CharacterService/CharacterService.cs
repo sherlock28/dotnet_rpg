@@ -62,17 +62,27 @@ namespace dotnet_rpg.Services.CharacterService
             var serviceResponse = new ServiceResponse<GetCharacterDto>();
             try
             {
-                Character character = await _context.Characters.FirstOrDefaultAsync(c => c.Id == updatedCharacter.Id);
+                Character character = await _context.Characters
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == updatedCharacter.Id);
 
-                character.Name = updatedCharacter.Name;
-                character.HitPoints = updatedCharacter.HitPoints;
-                character.Strength = updatedCharacter.Strength;
-                character.Defence = updatedCharacter.Defence;
-                character.Intelligence = updatedCharacter.Intelligence;
-                character.Class = updatedCharacter.Class;
+                if (character.User.Id == GetUserId())
+                {
+                    character.Name = updatedCharacter.Name;
+                    character.HitPoints = updatedCharacter.HitPoints;
+                    character.Strength = updatedCharacter.Strength;
+                    character.Defence = updatedCharacter.Defence;
+                    character.Intelligence = updatedCharacter.Intelligence;
+                    character.Class = updatedCharacter.Class;
 
-                await _context.SaveChangesAsync();
-                serviceResponse.Data = _mapper.Map<GetCharacterDto>(character);
+                    await _context.SaveChangesAsync();
+                    serviceResponse.Data = _mapper.Map<GetCharacterDto>(character);
+                }
+                else
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Character not found";
+                }
             }
             catch (Exception ex)
             {
@@ -98,7 +108,8 @@ namespace dotnet_rpg.Services.CharacterService
                     .Where(c => c.User.Id == GetUserId())
                     .Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
                 }
-                else {
+                else
+                {
                     serviceResponse.Success = false;
                     serviceResponse.Message = "Character not found.";
                 }
