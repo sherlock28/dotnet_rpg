@@ -31,7 +31,7 @@ namespace dotnet_rpg.Services.FightService
                     serviceResponse.Message = "Character not found.";
                     return serviceResponse;
                 }
-                var opponent = _context.Characters.FirstOrDefault(c => c.Id == request.OpppenentId);
+                var opponent = _context.Characters.FirstOrDefault(c => c.Id == request.OppenentId);
                 if (opponent == null)
                 {
                     serviceResponse.Success = false;
